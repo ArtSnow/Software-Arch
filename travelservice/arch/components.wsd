@@ -1,0 +1,41 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+AddElementTag("microService", $shape=EightSidedShape(), $bgColor="MediumSeaGreen", $fontColor="white", $legendText="microservice")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="LightGreen", $fontColor="white")
+AddElementTag("person", $bgColor="Teal", $fontColor="white")
+
+Person(admin, "Администратор")
+Person(moderator, "Модератор")
+Person(user, "Пользователь")
+
+System_Ext(web_site, "Клиентский веб-сайт", "HTML, CSS, JavaScript, React", "Веб-интерфейс")
+
+System_Boundary(travel_site, "Backend сервиса поиска попутчиков") {
+   Container(client_service, "Сервис управления пользователями", "C++", "Сервис регистрации, авторизации, поиска пользователей", $tags = "microService")  
+   Container(route_service, "Сервис маршрутов", "C++", "Сервис создания и просмотра маршрутов", $tags = "microService") 
+   Container(ride_service, "Сервис поездок", "C++", "Сервис создания и просмотра поездок", $tags = "microService")   
+   ContainerDb(db, "База данных", "MySQL", "Хранение данных о пользователях, маршрутах ипоездках", $tags = "storage")
+   ContainerDb(cache, "Кэш", "Redis", "Хранение данных о пользователях", $tags = "storage")
+   
+}
+
+Rel(admin, web_site, "Просмотр, добавление и редактирование информации о пользователях, маршрутов и поездок")
+Rel(moderator, web_site, "Модерация контента и пользователей")
+Rel(user, web_site, "Регистрация, вход на страничку и поиск пользователей, создание и просмотр маршрутов, создание и просмотр поездок")
+
+
+
+Rel(web_site, client_service, "Работа с пользователями")
+Rel(client_service, cache, "Получение данных из кеша")
+Rel(cache, db, "INSERT/SELECT/UPDATE", "SQL")
+
+
+Rel(web_site, route_service, "Работа с маршрутами", "localhost/route")
+Rel_D(route_service , db, "INSERT/SELECT/UPDATE", "SQL")
+
+
+
+Rel(web_site, ride_service, "Работа с поездками", "localhost/ride")
+Rel(ride_service, db, "INSERT/SELECT/UPDATE", "SQL")
+@enduml
